@@ -59,10 +59,10 @@ const actualPackSize = computed(() => {
 	return currency.value === Currency.Rub ? PACK_SIZE_RUB : PACK_SIZE_USD
 })
 
-const packs = ref(4)
+const packs = ref(2)
 const rows = ref(5)
-const gap = ref(0.01)
-const currency = ref<Currency>(Currency.Usd)
+const gap = ref(0.02)
+const currency = ref<Currency>(Currency.Rub)
 watch(currency, () => {
 	const sceneEl = document.querySelector('a-scene');
 	const box = 	sceneEl.querySelector('a-box');
