@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { THREE } from 'aframe';
 import Options from './Options.vue';
 import { Currency } from '../types'
@@ -63,43 +63,37 @@ const packs = ref(2)
 const rows = ref(5)
 const gap = ref(0.02)
 const currency = ref<Currency>(Currency.Rub)
-watch(currency, () => {
-	const sceneEl = document.querySelector('a-scene');
-	const box = 	sceneEl.querySelector('a-box');
-	box.setAttribute('textures', currency.value)
-})
 
-const sidesOfBanknote = ['right', 'left', 'top', 'bottom', 'front', 'back']
-const textures = computed(() => {
-	return sidesOfBanknote.map(side => {
-		if(['right', 'left', 'front', 'back'].includes(side) && currency.value === Currency.Usd) {
-			return new THREE.TextureLoader().load(`./src/assets/${Currency.Usd}/side.jpg`)
+const SIDES_OF_BANKNOTE = ['right', 'left', 'top', 'bottom', 'front', 'back']
+const getTextures = (cy: Currency) => {
+	return SIDES_OF_BANKNOTE.map(side => {
+		if(['right', 'left', 'front', 'back'].includes(side) && cy === Currency.Usd) {
+			return new THREE.TextureLoader().load(`./static/${Currency.Usd}/side.jpg`)
 		}
-		return new THREE.TextureLoader().load(`./src/assets/${currency.value}/${side}.jpg`)
-	})
-})
-
-const initTextures = () => {
-	AFRAME.registerComponent('textures', {
-		schema: {
-			currency: {type: 'string', default: 'rub'}
-		},
-		update: function() {
-			// this.el.addEventListener('loaded', async () => {});
-
-			const mesh = this.el.getObject3D('mesh');
-
-			const cubeMaterial = textures.value.map(texture => {
-				return new THREE.MeshBasicMaterial({map: texture})
-			})
-
-			// const oldMaterial = mesh.material;
-			mesh.material = cubeMaterial;
-			// oldMaterial.dispose()
-		},
+		return new THREE.TextureLoader().load(`./static/${cy}/${side}.jpg`)
 	})
 }
-initTextures()
+const TEXTURES = {
+	rub: getTextures(Currency.Rub),
+	usd: getTextures(Currency.Usd)
+}
+
+AFRAME.registerComponent('textures', {
+	schema: {
+		currency: {type: 'string', default: 'rub'}
+	},
+	update: function() {
+		// this.el.addEventListener('loaded', async () => {});
+
+		const mesh = this.el.getObject3D('mesh');
+
+		// const oldMaterial = mesh.material;
+		mesh.material = TEXTURES[this.data.currency].map(texture => {
+			return new THREE.MeshBasicMaterial({map: texture})
+		});
+		// oldMaterial.dispose()
+	},
+})
 
 const matrix = computed(() => {
 	const visibleColumns = Math.ceil(packs.value / rows.value)
