@@ -51,6 +51,7 @@ import { computed, ref } from 'vue'
 import { THREE } from 'aframe';
 import Options from './Options.vue';
 import { Currency } from '../types'
+import {Texture} from "three";
 
 const PACK_SIZE_RUB: number[] = [1.57, 0.69, 0.1]
 const PACK_SIZE_USD: number[] = [1.56, 0.662, 0.1]
@@ -88,7 +89,7 @@ AFRAME.registerComponent('textures', {
 		const mesh = this.el.getObject3D('mesh');
 
 		// const oldMaterial = mesh.material;
-		mesh.material = TEXTURES[this.data.currency].map(texture => {
+		mesh.material = TEXTURES[this.data.currency].map((texture: Texture) => {
 			return new THREE.MeshBasicMaterial({map: texture})
 		});
 		// oldMaterial.dispose()
