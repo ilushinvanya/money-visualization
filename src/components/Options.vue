@@ -1,5 +1,11 @@
 <template>
 	<aside :class="{ minimize }">
+		<div id="github">
+			<a href="https://github.com/ilushinvanya/linear-clock" target="_blank">
+				<img class="dark-img" src="/static/github-mark.svg"/>
+				<img class="light-img" src="/static/github-mark-white.svg"/>
+			</a>
+		</div>
 		<div class="header">
 			<h2>Опции:</h2>
 			<button class="minimize" @click="minimize = !minimize">−</button>
@@ -178,6 +184,11 @@ aside {
 	padding: 0 30px;
 	border: 1px #383838 solid;
 }
+@media (max-width: 400px) {
+	aside {
+		width: 100%;
+	}
+}
 
 .header {
 	padding: 10px 0;
@@ -218,5 +229,30 @@ select {
 	width: 100%;
 	margin-bottom: 30px;
 	border-radius: 5px;
+}
+
+#github {
+	position: fixed;
+	right: 0;
+	width: 36px;
+}
+#github img {
+	width: 100%;
+}
+@media (prefers-color-scheme: light) {
+	#github .light-img {
+		display: none;
+	}
+	#github .dark-img {
+		display: block;
+	}
+}
+@media (prefers-color-scheme: dark) {
+	#github .light-img {
+		display: block;
+	}
+	#github .dark-img {
+		display: none;
+	}
 }
 </style>
