@@ -1,38 +1,13 @@
 <template>
-	<aside :class="{ minimize }">
-		<div id="github">
-			<a href="https://github.com/ilushinvanya/linear-clock" target="_blank">
-				<img class="dark-img" src="/static/github-mark.svg"/>
-				<img class="light-img" src="/static/github-mark-white.svg"/>
-			</a>
-		</div>
+	<aside :class="{ minimize, dragging }">
 		<div class="header">
-			<h2>Опции:</h2>
-			<button class="minimize" @click="minimize = !minimize">−</button>
+			<h2>Настройки:</h2>
+			<div class="minimize-btn" @click="minimize = !minimize">
+				<span v-if="minimize">Показать</span>
+				<span v-else>Скрыть</span>
+			</div>
 		</div>
 		<div class="content">
-			<Option
-				ref="amountEl"
-				v-model="packs"
-				label="Сумма"
-				:options="amountOptions"
-			/>
-			<Option
-				ref="packsEl"
-				v-model="packs"
-				label="Всего пачек"
-				:options="packsOptions"
-			/>
-			<Option
-				v-model="rows"
-				label="Пачек в колонке"
-				:options="rowsOptions"
-			/>
-			<Option
-				v-model="gap"
-				label="Промежуток между пачек"
-				:options="gapOptions"
-			/>
 			<label>
 				<span>Валюта</span>
 				<select v-model="currency">
@@ -40,7 +15,41 @@
 					<option value="usd" label="Доллар"/>
 				</select>
 			</label>
+			<Option
+				ref="amountEl"
+				v-model="packs"
+				v-model:drag="dragging"
+				label="Сумма"
+				:options="amountOptions"
+				:text="totalAmountText"
+			/>
+			<Option
+				v-model="packs"
+				v-model:drag="dragging"
+				label="Всего пачек"
+				:options="packsOptions"
+			/>
+			<Option
+				v-model="rows"
+				v-model:drag="dragging"
+				label="Пачек в колонке"
+				:options="rowsOptions"
+			/>
+			<Option
+				v-model="gap"
+				v-model:drag="dragging"
+				label="Промежуток между пачек"
+				:options="gapOptions"
+			/>
+			<hr/>
+			<div id="github">
+				<a href="https://github.com/ilushinvanya/money-visualization" target="_blank">
+					<img class="dark-img" src="/static/github-mark.svg"/>
+					<img class="light-img" src="/static/github-mark-white.svg"/>
+				</a>
+			</div>
 		</div>
+
 	</aside>
 </template>
 
@@ -56,7 +65,6 @@ interface IProps {
 	currency: Currency;
 }
 
-const packsEl = ref(null)
 const amountEl = ref(null)
 
 const AMOUNT_IN_ONE_PACK_RUB = 500000
@@ -65,7 +73,8 @@ const amountInOnePack = (cy: Currency) => {
 	return cy === Currency.Rub ? AMOUNT_IN_ONE_PACK_RUB : AMOUNT_IN_ONE_PACK_USD
 }
 
-const minimize = ref(false)
+const minimize = ref(false) // TODO isMobile ? true : false
+const dragging = ref(false)
 
 const props = defineProps<IProps>()
 const emit = defineEmits(['update:packs', 'update:rows', 'update:gap', 'update:currency'])
@@ -146,6 +155,7 @@ watch(currency, () => {
 })
 
 onMounted(() => {
+	// TODO переделать на query
 	if(!location.hash) return
 
 	const match = location.hash.match(/(\d*)(rub|usd)$/);
@@ -175,7 +185,7 @@ onMounted(() => {
 <style scoped>
 aside {
 	border-radius: 10px;
-	background: #ffffff;
+	background-color: #ffffff;
 	width: 400px;
 	z-index: 999;
 	position: absolute;
@@ -183,6 +193,10 @@ aside {
 	top: 0;
 	padding: 0 30px;
 	border: 1px #383838 solid;
+	transition: background-color .1s ease-in-out;
+}
+aside.dragging {
+	background-color: rgba(255, 255, 255, 0.4);
 }
 @media (max-width: 400px) {
 	aside {
@@ -194,6 +208,7 @@ aside {
 	padding: 10px 0;
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
 	border-bottom: 1px #181818 solid;
 }
 h2 {
@@ -223,18 +238,27 @@ aside.minimize .header {
 	}
 }
 
+.minimize-btn {
+	border-radius: 8px;
+	border: 1px solid black;
+	padding: 8px;
+	font-weight: 500;
+	cursor: pointer;
+	user-select: none;
+	line-height: 16px;
+}
+
 select {
 	font-size: 16px;
 	padding: 10px;
 	width: 100%;
-	margin-bottom: 30px;
+	margin-bottom: 15px;
 	border-radius: 5px;
 }
 
 #github {
-	position: fixed;
-	right: 0;
 	width: 36px;
+	margin: 8px 0;
 }
 #github img {
 	width: 100%;
