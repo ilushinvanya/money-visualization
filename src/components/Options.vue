@@ -42,12 +42,16 @@
 				:options="gapOptions"
 			/>
 			<hr/>
-			<div id="github">
-				<a href="https://github.com/ilushinvanya/money-visualization" target="_blank">
-					<img class="dark-img" src="/static/github-mark.svg"/>
-					<img class="light-img" src="/static/github-mark-white.svg"/>
-				</a>
+			<div class="flex flex-center flex-between">
+				<div>В одной пачке 100 купюр</div>
+				<div id="github">
+					<a href="https://github.com/ilushinvanya/money-visualization" target="_blank">
+						<img class="dark-img" src="/static/github-mark.svg"/>
+						<img class="light-img" src="/static/github-mark-white.svg"/>
+					</a>
+				</div>
 			</div>
+
 		</div>
 
 	</aside>
@@ -55,8 +59,9 @@
 
 <script setup lang="ts">
 import { onMounted, computed, ref, watch } from 'vue'
-import { Currency } from '../types'
+import { Currency, isMobile } from '../types'
 import Option from './Option.vue'
+import { useRouter, useRoute, type LocationQueryRaw } from 'vue-router'
 
 interface IProps {
 	packs: number;
@@ -67,20 +72,24 @@ interface IProps {
 
 const amountEl = ref(null)
 
+const route = useRoute()
+const router = useRouter()
+
 const AMOUNT_IN_ONE_PACK_RUB = 500000
 const AMOUNT_IN_ONE_PACK_USD = 10000
 const amountInOnePack = (cy: Currency) => {
 	return cy === Currency.Rub ? AMOUNT_IN_ONE_PACK_RUB : AMOUNT_IN_ONE_PACK_USD
 }
 
-const minimize = ref(false) // TODO isMobile ? true : false
+const minimize = ref(isMobile())
 const dragging = ref(false)
 
 const props = defineProps<IProps>()
 const emit = defineEmits(['update:packs', 'update:rows', 'update:gap', 'update:currency'])
 const setHashNTitle = () => {
-	location.hash = `${totalAmount.value}${currency.value}`
-	document.title = `Как выглядит ${totalAmountText.value} ${currency.value === 'rub' ? 'рублей' : 'долларов'}`
+	// location.hash = `${totalAmount.value}${currency.value}`
+	// router.replace({ query: { currency: currency.value, amount: totalAmount.value } })
+
 }
 
 const packs = computed({
@@ -154,30 +163,76 @@ watch(currency, () => {
 	amountEl.value.refreshSlider()
 })
 
+const defaultSettings = {
+	amount: totalAmount.value,
+	currency: currency.value,
+	gap: gap.value,
+	rows: rows.value,
+}
+
+interface IRouteQuery extends LocationQueryRaw {
+	amount?: string;
+	currency?: string;
+	gap?: string;
+	rows?: string;
+}
+
 onMounted(() => {
-	// TODO переделать на query
-	if(!location.hash) return
+	const query = route.query as IRouteQuery
 
-	const match = location.hash.match(/(\d*)(rub|usd)$/);
-	if(!match) return
+	const currencyQuery = query.currency as Currency
+	if(/rub|usd/.test(currencyQuery)) {
+		currency.value = currencyQuery
 
-	const currencyHash = match[2] as Currency
-	if(currencyHash) {
-		currency.value = currencyHash
-	}
-
-	const amountHash = match[1]
-	if(amountHash) {
-		const parseAmount = parseInt(amountHash);
-		if(!isNaN(parseAmount)) {
-			if(
-				parseAmount <= packsOptions.max * amountInOnePack(currencyHash) ||
-				parseAmount >= packsOptions.min * amountInOnePack(currencyHash)
-			) {
-				packs.value = parseAmount / amountInOnePack(currencyHash)
+		if(query.amount) {
+			const parseAmount = parseInt(query.amount);
+			if(!isNaN(parseAmount)) {
+				if(
+					parseAmount <= packsOptions.max * amountInOnePack(currencyQuery) ||
+					parseAmount >= packsOptions.min * amountInOnePack(currencyQuery)
+				) {
+					packs.value = parseAmount / amountInOnePack(currencyQuery)
+				}
 			}
 		}
 	}
+
+	if(query.gap) {
+		const parseGap = parseFloat(query.gap);
+		if(!isNaN(parseGap) && (parseGap <= gapOptions.max || parseGap >= gapOptions.min)) {
+			gap.value = parseGap
+		}
+	}
+
+	if(query.rows) {
+		const parseRows = parseInt(query.rows);
+		if(!isNaN(parseRows) && (parseRows <= rowsOptions.max || parseRows >= rowsOptions.min)) {
+			rows.value = parseRows
+		}
+	}
+
+})
+
+const allSettings = computed(() => {
+	return {
+		amount: totalAmount.value,
+		currency: currency.value,
+		gap: gap.value,
+		rows: rows.value,
+	}
+})
+watch(allSettings, () => {
+
+	let query = {} as IRouteQuery
+	if(defaultSettings.amount !== totalAmount.value) query.amount = totalAmount.value.toString()
+	if(defaultSettings.gap !== gap.value) query.gap = gap.value.toString()
+	if(defaultSettings.rows !== rows.value) query.rows = rows.value.toString()
+	query.currency = currency.value
+	router.replace({ query })
+
+	document.title = `Как выглядит ${totalAmountText.value} ${currency.value === 'rub' ? 'рублей' : 'долларов'}`
+}, {
+	immediate: true
 })
 
 </script>
@@ -280,3 +335,29 @@ select {
 	}
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
