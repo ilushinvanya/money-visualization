@@ -42,16 +42,14 @@
 				:options="gapOptions"
 			/>
 			<hr/>
-			<div class="flex flex-center flex-between">
-				<div>В одной пачке 100 купюр</div>
-				<div id="github">
-					<a href="https://github.com/ilushinvanya/money-visualization" target="_blank">
-						<img class="dark-img" src="/static/github-mark.svg"/>
-						<img class="light-img" src="/static/github-mark-white.svg"/>
-					</a>
+			<div class="info">ℹ️ В одной пачке 100 купюр</div>
+			<a href="https://github.com/ilushinvanya/money-visualization" target="_blank" class="github flex flex-center">
+				<div class="image">
+					<img class="dark-img" src="/static/github-mark.svg"/>
+					<img class="light-img" src="/static/github-mark-white.svg"/>
 				</div>
-			</div>
-
+				<span>github проекта</span>
+			</a>
 		</div>
 
 	</aside>
@@ -86,11 +84,6 @@ const dragging = ref(false)
 
 const props = defineProps<IProps>()
 const emit = defineEmits(['update:packs', 'update:rows', 'update:gap', 'update:currency'])
-const setHashNTitle = () => {
-	// location.hash = `${totalAmount.value}${currency.value}`
-	// router.replace({ query: { currency: currency.value, amount: totalAmount.value } })
-
-}
 
 const packs = computed({
 	get: () => props.packs,
@@ -122,8 +115,6 @@ const totalAmountText = computed(() => {
 	}
 	return sumText
 })
-
-watch(packs, setHashNTitle)
 
 const rows = computed({
 	get: () => props.rows,
@@ -159,13 +150,12 @@ const currency = computed({
 	}
 })
 watch(currency, () => {
-	setHashNTitle()
 	amountEl.value.refreshSlider()
 })
 
 const defaultSettings = {
-	amount: totalAmount.value,
-	currency: currency.value,
+	// amount: totalAmount.value,
+	// currency: currency.value,
 	gap: gap.value,
 	rows: rows.value,
 }
@@ -224,9 +214,9 @@ const allSettings = computed(() => {
 watch(allSettings, () => {
 
 	let query = {} as IRouteQuery
-	if(defaultSettings.amount !== totalAmount.value) query.amount = totalAmount.value.toString()
 	if(defaultSettings.gap !== gap.value) query.gap = gap.value.toString()
 	if(defaultSettings.rows !== rows.value) query.rows = rows.value.toString()
+	query.amount = totalAmount.value.toString()
 	query.currency = currency.value
 	router.replace({ query })
 
@@ -248,10 +238,11 @@ aside {
 	top: 0;
 	padding: 0 30px;
 	border: 1px #383838 solid;
-	transition: background-color .1s ease-in-out;
+	transition: background-color .4s ease-out .8s;
 }
 aside.dragging {
 	background-color: rgba(255, 255, 255, 0.4);
+	transition: background-color .1s ease-in 0s;
 }
 @media (max-width: 400px) {
 	aside {
@@ -311,53 +302,30 @@ select {
 	border-radius: 5px;
 }
 
-#github {
-	width: 36px;
-	margin: 8px 0;
+.github, .info {
+	margin: 6px 0;
 }
-#github img {
-	width: 100%;
+
+.github .image {
+	margin-right: 8px;
+}
+.github .image img {
+	width: 20px;
 }
 @media (prefers-color-scheme: light) {
-	#github .light-img {
+	.github .light-img {
 		display: none;
 	}
-	#github .dark-img {
+	.github .dark-img {
 		display: block;
 	}
 }
 @media (prefers-color-scheme: dark) {
-	#github .light-img {
+	.github .light-img {
 		display: block;
 	}
-	#github .dark-img {
+	.github .dark-img {
 		display: none;
 	}
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
